@@ -40,6 +40,41 @@ Notes:
 
 Deliverable check for session one: `uv run pytest` passes, `research/` has three notes, and I can read the momentum result against both benchmarks.
 
+## Session One — Completed 2026-09-12
+
+**Built:** all 11 steps. 17 tests pass (`uv run pytest`). Three research
+notes in `research/`: data integrity, factor structure, momentum-xs v0.
+
+**Universe findings:** all 29 candidates listed and pass the $50M
+liquidity screen (thinnest: CORZ ~$263M/day). Several yfinance histories
+belong to predecessor entities — WULF (IKONICS), CIFR (SPAC shell), HUT
+(pre-merger TSX era), DELL (Class V tracking), VRT (SPAC), NBIS
+(pre-halt Yandex), CORZ (pre-Ch.11 listing) — `ipo_date` was overridden
+to the current entity's effective listing date and all earlier data is
+masked in analysis and backtests.
+
+**Key results (in-sample, net of costs, 2005-09 → 2026-09):**
+- Equal-weight universe benchmark (b): 29.7% CAGR, Sharpe 1.01 — a very
+  high bar, largely NVDA + survivor/hindsight bias in universe choice.
+- Factor structure: avg pairwise corr 0.39, PC1 ≈ 45% of variance,
+  spiking >0.7 in stress years — the universe is roughly one bet in
+  drawdowns. Cross-sectional/long-short designs are the honest path.
+- Momentum-xs v0 (6-1, top third, monthly): 30.1% CAGR, Sharpe 0.90 —
+  beats SPY, but **loses to benchmark (b) on Sharpe/Sortino/Calmar. v0
+  added nothing (CLAUDE.md #5). Do not tune; test new hypotheses.**
+
+**What broke along the way:** pandas 3.0's `stack()` no longer drops
+NaNs (fixed with `.dropna()`); naive cache re-fetched empty head/tail
+ranges every call (fixed with covered-range sidecar metadata).
+
+**Open questions added:**
+- Benchmark (b) is itself survivorship-flattered; consider adding SMH
+  as a third reference in reports since it is investable and unbiased.
+- Cost model's half-spread ladder is a static 2026-liquidity guess;
+  needs era-aware or quote-based estimates before conclusions get fine.
+- Momentum variants (vol-scaling, other lookbacks) must go through the
+  session-5 robustness-surface protocol, not one-off tuning.
+
 ## Roadmap after session one
 - **Session 2:** portfolio overlap analysis (existing holdings vs. universe); trade journal template; walk-forward framework (rolling train/test windows).
 - **Session 3:** second strategy family — post-earnings drift (needs earnings dates); compare to momentum on the same engine.
