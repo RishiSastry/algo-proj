@@ -23,14 +23,18 @@ TOP_FRACTION = 1 / 3
 MIN_NAMES = 3         # below this many candidates, stay in cash
 
 
-def momentum_score(closes: pd.DataFrame) -> pd.DataFrame:
-    """Trailing (LOOKBACK) return ending SKIP days ago. The value at
+def momentum_score(closes: pd.DataFrame, lookback: int = LOOKBACK_DAYS,
+                   skip: int = SKIP_DAYS) -> pd.DataFrame:
+    """Trailing `lookback` return ending `skip` days ago. The value at
     date t uses only closes up to t (both operands are lagged)."""
-    return closes.shift(SKIP_DAYS) / closes.shift(SKIP_DAYS + LOOKBACK_DAYS) - 1
+    return closes.shift(skip) / closes.shift(skip + lookback) - 1
 
 
 def generate_weights(prices: pd.DataFrame,
-                     universe: pd.DataFrame | None = None) -> pd.DataFrame:
+                     universe: pd.DataFrame | None = None,
+                     lookback: int = LOOKBACK_DAYS,
+                     skip: int = SKIP_DAYS,
+                     top_fraction: float = TOP_FRACTION) -> pd.DataFrame:
     """Target weights (dates × tickers, rows sum ≤ 1.0).
 
     `prices` is an adjusted-close panel (dates × tickers) of the
@@ -42,7 +46,7 @@ def generate_weights(prices: pd.DataFrame,
 
     closes = masked_closes(prices, universe)
     elig = eligibility(prices, universe)
-    score = momentum_score(closes)
+    score = momentum_score(closes, lookback=lookback, skip=skip)
 
     month = closes.index.to_period("M")
     month_ends = closes.index.to_series().groupby(month).last()
@@ -52,7 +56,7 @@ def generate_weights(prices: pd.DataFrame,
         candidates = score.loc[t].where(elig.loc[t]).dropna()
         row = pd.Series(0.0, index=closes.columns)
         if len(candidates) >= MIN_NAMES:
-            k = int(np.ceil(len(candidates) * TOP_FRACTION))
+            k = int(np.ceil(len(candidates) * top_fraction))
             top = candidates.nlargest(k).index
             row[top] = 1.0 / k
         weights.loc[t] = row
