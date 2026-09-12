@@ -76,12 +76,66 @@ ranges every call (fixed with covered-range sidecar metadata).
   session-5 robustness-surface protocol, not one-off tuning.
 
 ## Roadmap after session one
-- **Session 2:** portfolio overlap analysis (existing holdings vs. universe); trade journal template; walk-forward framework (rolling train/test windows).
-- **Session 3:** second strategy family — post-earnings drift (needs earnings dates); compare to momentum on the same engine.
-- **Session 4:** pairs / long-short within the universe to reduce single-factor exposure.
-- **Session 5:** parameter robustness — sensitivity surfaces, not point optimization. Kill anything fragile.
-- **Session 6:** broker paper-trading integration (Alpaca or Schwab API). Daily headless run via `claude -p` + cron that refreshes data, reruns backtests, and writes a summary.
+- **Session 2:** portfolio overlap analysis (existing holdings vs. universe); trade journal template; walk-forward framework (rolling train/test windows). — DONE 2026-09-12 (overlap **tooling** done; actual analysis blocked on holdings file, see below)
+- **Session 3:** second strategy family — post-earnings drift (needs earnings dates); compare to momentum on the same engine. — DONE 2026-09-12
+- **Session 4:** pairs / long-short within the universe to reduce single-factor exposure. — DONE 2026-09-12 (long-short momentum; pairs deferred, see next steps)
+- **Session 5:** parameter robustness — sensitivity surfaces, not point optimization. Kill anything fragile. — DONE 2026-09-12
+- **Session 6:** broker paper-trading integration (Alpaca or Schwab API). Daily headless run via `claude -p` + cron that refreshes data, reruns backtests, and writes a summary. — PARTIAL: `scripts/daily_update.py` (headless refresh + integrity + daily log, cron-ready) is done; broker half **blocked on Rishi**: choose Alpaca vs Schwab, provide paper-API keys, approve the SDK dependency.
 - **Phase 2 gate review:** walk-forward results, paper-trade log, then decide on portfolio sliver + options overlay (covered calls / cash-secured puts).
+
+## Sessions 2–5 — Completed 2026-09-12
+
+**Built:** overlap tool with ETF look-through (`src/analysis/overlap.py` +
+`portfolio/holdings.example.csv`; real holdings gitignored); trade
+journal (`journal/`); walk-forward framework (`src/backtest/walkforward.py`);
+earnings data layer (`src/data/earnings.py`, ~1,600 cached events, mature
+names back to ~2002); PEAD strategy; long-short support in the engine
+(gross-exposure budget + reporting); robustness-surface tooling
+(`src/analysis/robustness.py`); headless daily refresh
+(`scripts/daily_update.py`). 27 tests pass. Five new research notes.
+
+**Findings (all net of costs, vs. both benchmarks):**
+1. **Momentum, walk-forward OOS (2008–2026, 37 folds): adds nothing.**
+   OOS Sharpe 0.90 vs EW basket 1.03; parameter selection ties the
+   untuned 6-1 default; chosen params scatter (no stable winner).
+2. **Long-short momentum: zero alpha.** Dollar-neutral book earns ~0%
+   CAGR over 21 years (Sharpe 0.07) while factor correlation drops to
+   0.12 — long-only momentum's 30% CAGR was entirely sector beta.
+3. **PEAD: beta in a costume.** Sharpe monotone in hold length
+   (10d: 0.38 → 63d: ~1.0 = the basket), flat in surprise threshold —
+   the earnings signal itself contributes nothing; the family kill is
+   robust across a 16-cell surface.
+4. **Momentum kills are robust:** 30-cell surfaces are flat plateaus
+   (LO median 0.92, all ≤ 1.02; LS median 0.03). Nothing fragile was
+   kept; nothing worth tuning exists in these families.
+5. Snoop ledger on this sample now ≈ 88 backtests. Treat any future
+   in-grid "discovery" as noise.
+
+**Strategic read:** long-only tilts converge to benchmark (b); the
+one neutralized book is zero. Next promising directions are managing
+the factor itself (time-series/regime signals, vol targeting on the
+basket), pairs/spreads on economically linked subsets, and combining
+return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
+
+**Blocked on Rishi:**
+- Overlap analysis: fill in `portfolio/holdings.csv` (columns:
+  symbol,kind,market_value — see the example file), then run
+  `src/analysis/overlap.py` report. Note: yfinance exposes only top-10
+  ETF holdings, so look-through is a lower bound.
+- Session 6 broker half: pick Alpaca vs Schwab, provide paper keys,
+  approve the dependency.
+- Optional: install the daily cron —
+  `30 18 * * 1-5 cd ~/algo-proj && uv run python scripts/daily_update.py`.
+
+**Next sessions (proposed):**
+- **Session 7:** time-series/regime strategies on the basket — e.g.
+  trend filter on EW universe, vol-targeted basket; pre-register grids
+  BEFORE running; walk-forward from day one.
+- **Session 8:** pairs within buckets (hyperscaler pairs, chip pairs):
+  cointegration scan with train/test split; spread mean-reversion only
+  if a spread is stationary OOS.
+- **Session 9:** portfolio assembly — combine surviving sleeves +
+  cash management; Phase 2 gate prep.
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:
