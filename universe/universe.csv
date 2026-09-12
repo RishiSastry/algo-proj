@@ -1,0 +1,30 @@
+ticker,name,bucket,ipo_date,notes
+MSFT,Microsoft,hyperscaler,1986-03-13,
+AMZN,Amazon,hyperscaler,1997-05-15,
+GOOGL,Alphabet,hyperscaler,2004-08-19,
+META,Meta Platforms,hyperscaler,2012-05-18,
+ORCL,Oracle,hyperscaler,1986-03-12,yfinance history starts 1986; actual IPO 1986-03-12
+NVDA,NVIDIA,chip,1999-01-22,
+AMD,Advanced Micro Devices,chip,1980-03-17,yfinance history starts 1980; IPO was 1972
+AVGO,Broadcom,chip,2009-08-06,Avago IPO; renamed Broadcom after 2016 acquisition
+TSM,Taiwan Semiconductor (ADR),chip,1997-10-09,ADR — FX and Taiwan trading-hours effects
+MRVL,Marvell Technology,chip,2000-06-30,
+MU,Micron Technology,chip,1984-06-01,
+ARM,Arm Holdings (ADR),chip,2023-09-14,ADR; short history
+ASML,ASML Holding (ADR),chip,1995-03-15,ADR — FX and European trading-hours effects
+QCOM,Qualcomm,chip,1991-12-13,
+INTC,Intel,chip,1980-03-17,yfinance history starts 1980; IPO was 1971
+CRWV,CoreWeave,neocloud,2025-03-28,IPO 2025-03; very short history
+NBIS,Nebius Group,neocloud,2024-10-21,Formerly Yandex NV; Nasdaq trading resumed 2024-10 after 2022 halt — pre-halt data excluded
+IREN,IREN Limited,neocloud,2021-11-17,Bitcoin miner pivoting to AI data centers
+APLD,Applied Digital,neocloud,2022-04-13,Nasdaq listing 2022-04; formerly Applied Blockchain; pivoted to AI data centers
+WULF,TeraWulf,neocloud,2021-12-13,yfinance history back to 1994 is predecessor IKONICS — ipo_date overridden to reverse-merger completion 2021-12
+CORZ,Core Scientific,neocloud,2024-01-24,Relisted 2024-01 after Ch.11; prior 2021 SPAC listing excluded
+CIFR,Cipher Mining,neocloud,2021-08-27,yfinance history from 2020 is SPAC shell (GWAC) — ipo_date overridden to merger close 2021-08
+HUT,Hut 8,neocloud,2023-11-30,yfinance history from 2018 is legacy TSX-era Hut 8 — ipo_date set to USBTC merger close (new Hut 8 Corp) 2023-11
+SMCI,Super Micro Computer,hardware,2007-03-29,
+DELL,Dell Technologies,hardware,2018-12-28,yfinance history from 2016 is Class V tracking stock — ipo_date set to Class C listing 2018-12
+ANET,Arista Networks,hardware,2014-06-06,
+VRT,Vertiv Holdings,hardware,2020-02-07,yfinance history from 2018 is SPAC shell (GS Acquisition) — ipo_date set to merger close 2020-02
+SPY,SPDR S&P 500 ETF,benchmark,1993-01-29,Benchmark (a) — not part of tradable universe
+SMH,VanEck Semiconductor ETF,benchmark,2000-06-05,Sector reference — not part of tradable universe
