@@ -150,13 +150,23 @@ return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
   fake strategies. No pairs trading on this universe; revisit neocloud
   pairs ~2027+ when post-pivot histories reach 5 years.
 
-**Next sessions (proposed):**
-- **Session 9:** portfolio assembly — trend-filtered basket as core
-  sleeve; test vol-target overlay and PEAD-style cash profile as
-  pre-registered combinations; position sizing for the $1K Phase-1
-  account (whole shares! fractional?); Phase 2 gate prep.
-- **Session 10 (needs Rishi):** broker paper integration + first
-  journaled paper trades of the trend-filtered basket.
+## Session 9 — Completed 2026-09-12
+
+- **Trend × vol-target combo: rejected.** Sharpe 0.98 / Calmar 0.61 vs
+  trend-only's 1.05 / 0.81 — the two signals hedge the same episodes,
+  so stacking double-counts the de-risking. Trend-only stays the core
+  sleeve; no more overlay variants against this sample.
+- **$1K whole-share implementation is infeasible:** $37/name budget vs
+  ~$225 median share price; only the 4 junkiest names are affordable.
+  **Fractional shares are a hard requirement → Alpaca** (Schwab
+  fractional covers only S&P 500 slices). Alternative to price out:
+  SMH as basket proxy for the trend signal.
+
+**Next session (needs Rishi):**
+- **Session 10:** Alpaca paper account + keys (or veto with an
+  alternative), approve `alpaca-py` dependency; wire the trend-filtered
+  basket to paper orders; first journaled paper trades; extend
+  `scripts/daily_update.py` to emit the current trend signal state.
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:

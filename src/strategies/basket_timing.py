@@ -88,3 +88,21 @@ def generate_weights_voltarget(prices: pd.DataFrame,
     realized = rets.rolling(vol_window).std() * np.sqrt(TRADING_DAYS)
     scalar = (target_vol / realized).clip(upper=1.0).fillna(0.0)
     return _scaled_ew(prices, universe, scalar)
+
+
+def generate_weights_combo(prices: pd.DataFrame,
+                           universe: pd.DataFrame | None = None,
+                           ma_window: int = MA_WINDOW,
+                           target_vol: float = TARGET_VOL,
+                           vol_window: int = VOL_WINDOW) -> pd.DataFrame:
+    """Session 9 pre-registered combination: exposure =
+    trend_signal × min(1, target_vol / realized vol). In a downtrend
+    the book is cash regardless of vol; in an uptrend it is vol-scaled."""
+    if universe is None:
+        universe = load_universe()
+    index = basket_index(prices, universe)
+    trend = (index > index.rolling(ma_window).mean()).astype(float)
+    rets = equal_weight_returns(prices, universe)
+    realized = rets.rolling(vol_window).std() * np.sqrt(TRADING_DAYS)
+    volscale = (target_vol / realized).clip(upper=1.0)
+    return _scaled_ew(prices, universe, (trend * volscale).fillna(0.0))
