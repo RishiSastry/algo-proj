@@ -1,0 +1,58 @@
+# plan.md — Roadmap and Session One Spec
+
+## Goals
+- **Learning goal:** understand markets, options, quant research methodology, and the tech behind a systematic model.
+- **Deliverable:** a backtested, walk-forward-validated strategy on the AI-infrastructure universe, running paper trades through a broker API.
+- **Return target:** beat buy-and-hold SPY *and* an equal-weight basket of the universe on a risk-adjusted basis. Aspirational: ~15–20% annualized with survivable drawdowns.
+- **Capital plan:** Phase 1 = $1K cash, stocks/ETFs only, process-driven (20–30 journaled trades, system followed on every one). Phase 2 = small sliver of existing portfolio, options overlay unlocked, gated on walk-forward validation + paper trading.
+- **Explicitly out of scope:** day trading, HFT, margin/leverage, discretionary thesis trades.
+
+## Universe (candidate — VERIFY in session one)
+Each ticker must be checked for: still listed, average daily dollar volume > $50M, IPO date recorded. Drop or flag anything that fails.
+
+| Bucket | Tickers (candidates) |
+|---|---|
+| Hyperscalers | MSFT, AMZN, GOOGL, META, ORCL |
+| Chipmakers & fab | NVDA, AMD, AVGO, TSM, MRVL, MU, ARM, ASML, QCOM, INTC |
+| Neoclouds / AI data centers | CRWV, NBIS, IREN, APLD, WULF, CORZ, CIFR, HUT |
+| Supporting hardware / networking / power | SMCI, DELL, ANET, VRT |
+| Benchmarks | SPY, SMH (sector), equal-weight universe (computed) |
+
+Notes:
+- "Neo labs" (OpenAI, Anthropic, etc.) are private. Exposure only via hyperscalers. Revisit if any IPO.
+- Neoclouds are recent IPOs / pivots with short histories — expect 1–3 years of data. Survivorship-bias handling (CLAUDE.md #4) is critical here.
+- Many of these names are likely already held via broad ETFs in the existing portfolio. Session two quantifies that overlap.
+
+## Session One — Build Spec (paste into Claude Code)
+> Read CLAUDE.md and plan.md first. Then build the following, committing after each numbered step.
+
+1. **Scaffold.** `uv init`, `pyproject.toml` with pandas, numpy, matplotlib, scipy, statsmodels, yfinance, pyarrow, pytest. Create the layout in CLAUDE.md. `.gitignore` covering `data/cache/`, notebooks checkpoints, `.venv`. `git init` + first commit.
+2. **Universe file.** `universe/universe.csv` with columns `ticker,name,bucket,ipo_date,notes` from the candidate table above. For each ticker, fetch first available date from yfinance and record it as `ipo_date` (approximate is fine; note where yfinance history starts later than the true IPO).
+3. **Data layer.** `src/data/fetch.py`: `fetch_prices(tickers, start="2005-01-01", end=None) -> DataFrame` (MultiIndex columns: field × ticker, adjusted). `src/data/cache.py`: Parquet cache keyed by ticker; only fetch missing date ranges. Pull the full universe + SPY + SMH.
+4. **Integrity checks.** `src/data/integrity.py`: report missing trading days, zero/negative prices, gaps > 5 days, suspicious splits (single-day |return| > 50%). Write results to `research/YYYY-MM-DD-data-integrity.md`. Add `tests/test_integrity.py`.
+5. **Returns & stats.** `src/analysis/returns.py` (simple, log, rolling vol, drawdown series). `src/analysis/stats.py`: `summary_stats(returns) -> dict` with CAGR, ann. vol, Sharpe (rf=0 for now), Sortino, max DD, Calmar. Print the table for SPY, SMH, and each ticker.
+6. **Equal-weight benchmark.** `src/analysis/benchmarks.py`: equal-weight, monthly-rebalanced basket of the universe, only including tickers after `ipo_date + 60 trading days`. This is benchmark (b) for everything that follows.
+7. **Factor check.** `src/analysis/factor.py`: rolling 60-day pairwise correlation matrix of the universe, and the fraction of variance explained by the first principal component. Plot both. This measures "how much is this really one bet." Write findings to `research/YYYY-MM-DD-factor-structure.md`.
+8. **Backtest engine v0.** `src/backtest/engine.py`: takes a weights DataFrame (dates × tickers), shifts signals by one day, applies costs from `src/backtest/costs.py` (5 bps slippage + spread estimate), computes portfolio returns, turnover, exposure. `src/backtest/metrics.py` wraps `summary_stats` and adds comparison vs. both benchmarks. Add `tests/test_no_lookahead.py` that fails if a weight at date t depends on prices at date t.
+9. **First strategy.** `src/strategies/momentum_xs.py`: cross-sectional momentum — at each month-end, rank universe by trailing 6-month return (skip most recent month), hold top third equal-weight, rebalance monthly. Run it through the engine. Save equity curve + drawdown plot to `research/figures/`.
+10. **Research note.** `research/YYYY-MM-DD-momentum-xs-v0.md`: setup, results vs. both benchmarks, in-sample only (label it clearly), and a full "How this could be fooling us" section. Do NOT tune parameters yet.
+11. **Update plan.md** with what was built, what broke, and open questions.
+
+Deliverable check for session one: `uv run pytest` passes, `research/` has three notes, and I can read the momentum result against both benchmarks.
+
+## Roadmap after session one
+- **Session 2:** portfolio overlap analysis (existing holdings vs. universe); trade journal template; walk-forward framework (rolling train/test windows).
+- **Session 3:** second strategy family — post-earnings drift (needs earnings dates); compare to momentum on the same engine.
+- **Session 4:** pairs / long-short within the universe to reduce single-factor exposure.
+- **Session 5:** parameter robustness — sensitivity surfaces, not point optimization. Kill anything fragile.
+- **Session 6:** broker paper-trading integration (Alpaca or Schwab API). Daily headless run via `claude -p` + cron that refreshes data, reruns backtests, and writes a summary.
+- **Phase 2 gate review:** walk-forward results, paper-trade log, then decide on portfolio sliver + options overlay (covered calls / cash-secured puts).
+
+## Curriculum thread (with Claude in chat)
+Concepts taught on demand, against real data from this repo, in roughly this order:
+market microstructure → returns & volatility → the sin list (overfitting, lookahead, survivorship, snooping) → cross-sectional vs. time-series strategies → factor/correlation structure → walk-forward validation → options fundamentals & the Greeks → volatility risk premium → execution & broker APIs.
+
+## Open questions
+- Data source upgrade path if yfinance proves unreliable (Polygon, Tiingo, Alpaca data).
+- Which broker API for paper trading: Alpaca (easiest) vs. Schwab (where the money is).
+- Handling of ARM/ASML/TSM as ADRs / foreign listings — FX and hours effects.
