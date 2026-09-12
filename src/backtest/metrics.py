@@ -21,12 +21,13 @@ def strategy_report(result: BacktestResult,
                     benchmarks: dict[str, pd.Series]) -> pd.DataFrame:
     """Stats table: strategy (net and gross) vs. each benchmark, all
     restricted to the strategy's live date range."""
-    live = result.net_returns.loc[result.exposure.ne(0).cummax()]
+    live = result.net_returns.loc[result.gross_exposure.ne(0).cummax()]
     rows = {
         "strategy (net)": dict(summary_stats(live),
                                hit_rate=hit_rate(live),
                                ann_turnover=result.annual_turnover(),
-                               avg_exposure=result.avg_exposure()),
+                               avg_exposure=result.avg_exposure(),
+                               avg_gross=result.avg_gross_exposure()),
         "strategy (gross)": summary_stats(result.gross_returns.loc[live.index]),
     }
     for name, bench in benchmarks.items():
@@ -36,7 +37,7 @@ def strategy_report(result: BacktestResult,
 
 def format_report(report: pd.DataFrame) -> pd.DataFrame:
     out = report.copy()
-    pct = ["cagr", "ann_vol", "max_drawdown", "hit_rate", "avg_exposure"]
+    pct = ["cagr", "ann_vol", "max_drawdown", "hit_rate", "avg_exposure", "avg_gross"]
     two = ["sharpe", "sortino", "calmar", "ann_turnover"]
     for col in pct:
         if col in out:

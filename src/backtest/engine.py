@@ -31,7 +31,8 @@ class BacktestResult:
     gross_returns: pd.Series
     costs: pd.Series
     turnover: pd.Series          # one-way, Σ|Δw| per day
-    exposure: pd.Series          # Σw per day (executed)
+    exposure: pd.Series          # net, Σw per day (executed)
+    gross_exposure: pd.Series    # Σ|w| per day (executed)
     executed_weights: pd.DataFrame
 
     def annual_turnover(self) -> float:
@@ -39,6 +40,9 @@ class BacktestResult:
 
     def avg_exposure(self) -> float:
         return float(self.exposure.mean())
+
+    def avg_gross_exposure(self) -> float:
+        return float(self.gross_exposure.mean())
 
 
 def run_backtest(weights: pd.DataFrame, prices: pd.DataFrame) -> BacktestResult:
@@ -53,6 +57,8 @@ def run_backtest(weights: pd.DataFrame, prices: pd.DataFrame) -> BacktestResult:
 
     if (weights.fillna(0.0).sum(axis=1) > 1.0 + 1e-9).any():
         raise ValueError("weight rows must sum to ≤ 1.0")
+    if (weights.fillna(0.0).abs().sum(axis=1) > 1.0 + 1e-9).any():
+        raise ValueError("gross exposure Σ|w| must be ≤ 1.0 (no leverage)")
 
     # No lookahead: weight decided at close t is held during day t+1.
     executed = weights.reindex(closes.index).shift(1).fillna(0.0)
@@ -75,5 +81,6 @@ def run_backtest(weights: pd.DataFrame, prices: pd.DataFrame) -> BacktestResult:
         costs=cost,
         turnover=turnover,
         exposure=executed.sum(axis=1),
+        gross_exposure=executed.abs().sum(axis=1),
         executed_weights=executed,
     )
