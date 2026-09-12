@@ -42,6 +42,5 @@ def test_equal_weight_two_tickers_averages(dates):
     closes = pd.DataFrame({"AAA": aaa, "BBB": 50.0}, index=dates)
     universe = pd.DataFrame({"ipo_date": [dates[0]] * 2}, index=["AAA", "BBB"])
     rets = equal_weight_returns(closes, universe, seasoning_days=0)
-    month_ends = closes.index.to_series().groupby(closes.index.to_period("M")).last()
-    first_day_after = rets.index[rets.index.get_loc(month_ends.iloc[0]) + 1]
-    assert rets.loc[first_day_after] == pytest.approx(0.005)
+    # rets starts on the first bar after the first month-end rebalance
+    assert rets.iloc[0] == pytest.approx(0.005)
