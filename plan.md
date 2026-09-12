@@ -127,15 +127,36 @@ return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
 - Optional: install the daily cron —
   `30 18 * * 1-5 cd ~/algo-proj && uv run python scripts/daily_update.py`.
 
+## Sessions 7–8 — Completed 2026-09-12
+
+**Session 7 — basket timing (`src/strategies/basket_timing.py`):**
+- **Trend filter (10-month rule on the EW basket) is the program's
+  first survivor: walk-forward OOS net Sharpe 1.17 vs EW basket 1.03
+  and SPY 0.64 over the identical 2008–2026 window.** Max drawdown
+  roughly halves (-32% vs -61%), turnover 1.4×/yr; the edge is
+  drawdown control, not extra return (in-sample CAGR 25.5% vs basket
+  29.1%). Surfaces are plateaus (all MA windows ≥ basket Sharpe);
+  fold selection is stable (ma105 in 22/37 folds). Caveat honored in
+  the note: the edge rests on ~4 regime exits — wide error bars.
+- Vol targeting (20%/63d): Sharpe 1.03, milder improvement; candidate
+  overlay for later, untested in combination (pre-register first).
+- **Graduates to paper trading once the broker leg exists.**
+
+**Session 8 — pairs scan (`src/analysis/pairs.py`):**
+- 46 within-bucket pairs, Engle-Granger on pre-2018 train with
+  Bonferroni correction, hedge-ratio-frozen OOS ADF on 2018–2026.
+  **Zero survivors.** The 3 pairs a naive α=0.05 scan would have
+  "found" all fail OOS — multiple-testing correction prevented three
+  fake strategies. No pairs trading on this universe; revisit neocloud
+  pairs ~2027+ when post-pivot histories reach 5 years.
+
 **Next sessions (proposed):**
-- **Session 7:** time-series/regime strategies on the basket — e.g.
-  trend filter on EW universe, vol-targeted basket; pre-register grids
-  BEFORE running; walk-forward from day one.
-- **Session 8:** pairs within buckets (hyperscaler pairs, chip pairs):
-  cointegration scan with train/test split; spread mean-reversion only
-  if a spread is stationary OOS.
-- **Session 9:** portfolio assembly — combine surviving sleeves +
-  cash management; Phase 2 gate prep.
+- **Session 9:** portfolio assembly — trend-filtered basket as core
+  sleeve; test vol-target overlay and PEAD-style cash profile as
+  pre-registered combinations; position sizing for the $1K Phase-1
+  account (whole shares! fractional?); Phase 2 gate prep.
+- **Session 10 (needs Rishi):** broker paper integration + first
+  journaled paper trades of the trend-filtered basket.
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:
