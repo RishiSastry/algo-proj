@@ -189,7 +189,11 @@ return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
 - Phase-2 capital sizing note: whole-share EW basket needs ≈ $45K+ to
   track well; below that, the SMH proxy remains the Schwab expression.
 
-**Waiting on Rishi:** `portfolio/holdings.csv` for the overlap report.
+**Overlap report delivered 2026-09-13**
+(research/2026-09-13-portfolio-overlap.md): the existing portfolio is
+already ≥44% AI-infra universe exposure, NVDA alone 38%. Flag for the
+Phase-2 gate: adding a long sleeve adds to that concentration; the
+signal's de-risking use may matter more than its return use.
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:

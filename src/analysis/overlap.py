@@ -18,6 +18,18 @@ import pandas as pd
 
 HOLDINGS_CSV = Path(__file__).resolve().parents[2] / "portfolio" / "holdings.csv"
 
+# Same economic exposure under a different symbol (foreign listings,
+# share classes) mapped onto the universe ticker.
+ALIASES = {
+    "2330.TW": "TSM",   # TSMC Taiwan listing -> ADR
+    "GOOG": "GOOGL",    # Alphabet class C -> class A
+    "ASML.AS": "ASML",  # ASML Amsterdam -> ADR
+}
+
+
+def canonical(symbol: str) -> str:
+    return ALIASES.get(symbol.upper(), symbol.upper())
+
 
 def load_holdings(path: Path | None = None) -> pd.DataFrame:
     """holdings.csv: columns symbol, kind (stock|etf), market_value."""
@@ -51,12 +63,12 @@ def effective_exposure(holdings: pd.DataFrame, universe_tickers: list[str],
     rows = {t: {"direct": 0.0, "via_etf": 0.0} for t in universe_tickers}
 
     for _, h in holdings.iterrows():
-        if h["kind"] == "stock" and h["symbol"] in rows:
-            rows[h["symbol"]]["direct"] += h["market_value"]
+        if h["kind"] == "stock" and canonical(h["symbol"]) in rows:
+            rows[canonical(h["symbol"])]["direct"] += h["market_value"]
         elif h["kind"] == "etf":
             for sym, w in etf_weights.get(h["symbol"], {}).items():
-                if sym in rows:
-                    rows[sym]["via_etf"] += h["market_value"] * w
+                if canonical(sym) in rows:
+                    rows[canonical(sym)]["via_etf"] += h["market_value"] * w
 
     out = pd.DataFrame(rows).T
     out["total"] = out["direct"] + out["via_etf"]
