@@ -17,3 +17,6 @@ __pycache__/
 
 # Real holdings are sensitive — only the example is committed
 portfolio/holdings.csv
+
+# Cron output
+logs/

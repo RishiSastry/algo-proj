@@ -162,11 +162,34 @@ return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
   fractional covers only S&P 500 slices). Alternative to price out:
   SMH as basket proxy for the trend signal.
 
-**Next session (needs Rishi):**
-- **Session 10:** Alpaca paper account + keys (or veto with an
-  alternative), approve `alpaca-py` dependency; wire the trend-filtered
-  basket to paper orders; first journaled paper trades; extend
-  `scripts/daily_update.py` to emit the current trend signal state.
+## Session 10 — Completed 2026-09-13 (broker = Schwab)
+
+**Decision (Rishi): Schwab.** Consequences handled:
+- Schwab has no fractional shares outside S&P 500 Slices and **no
+  paper-trading API sandbox** (paperMoney is thinkorswim-only). So:
+- **Paper phase runs in an internal simulator** (`src/paper/simulator.py`,
+  `scripts/paper_trade.py`) — real cached prices, t+1 open execution,
+  10 bps/side costs, idempotent daily runs. No broker needed until
+  real money.
+- **Two paper books started 2026-09-13, $1K each, signal currently IN:**
+  `paper/basket` (fractional, strategy-faithful trend sleeve) and
+  `paper/smh` (whole-share SMH proxy — the only faithful $1K Schwab
+  expression). SMH-proxy backtest: Sharpe 0.75 vs basket's 1.05 — the
+  proxy is honest but expensive (see 2026-09-13-smh-proxy.md); the
+  forward race between the books feeds the Phase-2 gate.
+- **Cron installed** (weekdays 18:30): data refresh + integrity +
+  paper trade, logging to `logs/cron.log` and `research/daily-log.md`.
+  Caveats: the Mac must be awake at 18:30; macOS may require granting
+  cron Full Disk Access (System Settings → Privacy) if logs stay empty.
+
+**Phase 2 prerequisites (when real money starts, not before):**
+- Schwab Trader API: developer.schwab.com account → create app → OAuth
+  handshake; `schwab-py` is the likely client library (dependency —
+  needs approval then).
+- Phase-2 capital sizing note: whole-share EW basket needs ≈ $45K+ to
+  track well; below that, the SMH proxy remains the Schwab expression.
+
+**Waiting on Rishi:** `portfolio/holdings.csv` for the overlap report.
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:
