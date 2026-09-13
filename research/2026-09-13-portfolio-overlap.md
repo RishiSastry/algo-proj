@@ -42,6 +42,36 @@ are the only meaningful non-AI-infra equity exposure.
    the validated signal might be de-risking the existing book in
    downtrends rather than adding a new long sleeve on top.
 
+## Update (same day): Morgan Stanley work AMZN included
+
+Rishi disclosed ≈$44K of AMZN at Morgan Stanley (employer equity comp,
+**not tradable — account is to be left untouched**), and set the
+trading mandate: **all trading happens in the Schwab account only.**
+
+Revised picture (total wealth in scope ≈ $92K):
+
+| exposure | % of total | note |
+|---|---|---|
+| AMZN | **47.9%** | work equity, locked |
+| NVDA | 20.1% | Schwab, tradable |
+| CRWV | 1.6% | Schwab, tradable |
+| VT look-through rest | ~1.3% | |
+| **Universe total (lower bound)** | **70.8%** | |
+
+Two facts worth stating plainly:
+1. **~71% of wealth-in-scope is one factor**, and the largest slice is
+   employer stock — the same employer that pays the salary. Human
+   capital and financial capital are correlated on top of the 71%.
+2. **The locked AMZN cannot be managed, only measured.** Whatever the
+   Phase-2 gate decides, the tradable levers all sit inside Schwab
+   (~$48K), of which the largest is NVDA. The trend signal's
+   de-risking interpretation from the section above gets stronger:
+   the Schwab account is the only place any risk can be taken *off*.
+
+Holdings file now carries `account` and `tradable` columns; the
+overlap tool treats all rows identically (exposure is exposure), and
+the tradable flag is for future position-sizing logic.
+
 ## How this could be fooling us
 
 - **Top-10 look-through is a floor**, single-vendor, single snapshot;

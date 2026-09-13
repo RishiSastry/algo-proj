@@ -189,11 +189,21 @@ return *shapes* (PEAD's cash-heavy profile) at the portfolio level.
 - Phase-2 capital sizing note: whole-share EW basket needs ≈ $45K+ to
   track well; below that, the SMH proxy remains the Schwab expression.
 
-**Overlap report delivered 2026-09-13**
-(research/2026-09-13-portfolio-overlap.md): the existing portfolio is
-already ≥44% AI-infra universe exposure, NVDA alone 38%. Flag for the
-Phase-2 gate: adding a long sleeve adds to that concentration; the
-signal's de-risking use may matter more than its return use.
+**Overlap report delivered 2026-09-13, updated same day**
+(research/2026-09-13-portfolio-overlap.md): including ≈$44K of locked
+work AMZN at Morgan Stanley, total wealth in scope is ≈$92K and
+**≥70% is AI-infra universe exposure** (AMZN 48% — employer stock —
+NVDA 20%, CRWV 2%). Flag for the Phase-2 gate: adding a long sleeve
+adds to that concentration; the signal's de-risking use may matter
+more than its return use.
+
+**Trading mandate (Rishi, 2026-09-13): all trading happens in the
+Schwab individual account ONLY.** The Morgan Stanley account (work
+AMZN) and any other accounts are untouchable. Phase-1 $1K comes from
+Schwab cash (~$2.1K available). Open question for Rishi: the strategy
+universe includes AMZN — given 48% locked exposure, should the
+*tradable* sleeve exclude AMZN? That is a universe change and needs
+explicit sign-off either way (CLAUDE.md working style).
 
 ## Curriculum thread (with Claude in chat)
 Concepts taught on demand, against real data from this repo, in roughly this order:
