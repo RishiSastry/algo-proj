@@ -1,9 +1,13 @@
 """Daily paper-trading run — the trend sleeve in two implementations.
 
 Accounts under paper/:
-- basket/  fractional shares, the strategy-faithful EW basket (what the
-           research validated; not tradable at Schwab with $1K).
-- smh/     whole shares of SMH only (the Schwab-implementable proxy).
+- basket/    fractional shares, the strategy-faithful EW basket (what the
+             research validated; not tradable at Schwab with $1K).
+- smh/       whole shares of SMH only (simplest Schwab-implementable proxy).
+- slices16/  the S&P-500-member sub-basket, fractional via Schwab Stock
+             Slices (passed its pre-registered test 2026-09-13; membership
+             must be re-verified before live use). Own trend gate on its
+             own 16-name index.
 
 Each run refreshes prices, then processes every trading day since the
 account's last run (safe to miss days; idempotent per day). Targets
@@ -28,6 +32,10 @@ from src.strategies.basket_timing import MA_WINDOW, basket_index, generate_weigh
 
 PAPER_DIR = REPO / "paper"
 
+# S&P 500 members of the universe (checked 2026-09-13; re-verify for live)
+SLICES16 = ["MSFT", "AMZN", "GOOGL", "META", "ORCL", "NVDA", "AMD", "AVGO",
+            "MU", "MRVL", "QCOM", "INTC", "DELL", "ANET", "SMCI", "VRT"]
+
 
 def main() -> int:
     universe = load_universe()
@@ -36,23 +44,27 @@ def main() -> int:
     uni_closes = panel["Close"][tickers]
 
     basket_weights = generate_weights_trend(uni_closes, universe)
+    slices_weights = generate_weights_trend(uni_closes[SLICES16], universe)
     idx = basket_index(uni_closes, universe)
     signal = (idx > idx.rolling(MA_WINDOW).mean()).astype(float)
 
     accounts = [
-        ("basket", Account.load(PAPER_DIR / "basket", whole_shares=False)),
-        ("smh", Account.load(PAPER_DIR / "smh", whole_shares=True)),
+        ("basket", Account.load(PAPER_DIR / "basket", whole_shares=False),
+         basket_weights),
+        ("smh", Account.load(PAPER_DIR / "smh", whole_shares=True), None),
+        ("slices16", Account.load(PAPER_DIR / "slices16", whole_shares=False),
+         slices_weights),
     ]
 
-    for name, acct in accounts:
+    for name, acct, weights in accounts:
         if acct.last_processed:
             todo = panel.index[panel.index > pd.Timestamp(acct.last_processed)]
         else:
             todo = panel.index[-1:]  # new account: start today, no replay
 
         for date in todo:
-            if name == "basket":
-                row = basket_weights.loc[date]
+            if weights is not None:
+                row = weights.loc[date]
                 targets = {t: float(w) for t, w in row.items() if w > 0}
                 opens = panel["Open"].loc[date]
                 closes = panel["Close"].loc[date]
@@ -64,7 +76,7 @@ def main() -> int:
 
         nav = acct.nav(panel["Close"].iloc[-1])
         state = "IN (uptrend)" if signal.iloc[-1] > 0 else "OUT (cash)"
-        print(f"{name:7s} NAV ${nav:,.2f} | signal {state} | "
+        print(f"{name:8s} NAV ${nav:,.2f} | signal {state} | "
               f"positions {len(acct.positions)} | last {acct.last_processed}")
     return 0
 
