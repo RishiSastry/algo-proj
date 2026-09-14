@@ -47,3 +47,41 @@ Anything less → killed, results recorded, no iteration.
 
 Snoop-ledger note: this is the 4th strategy family tested against this
 sample (~140 prior backtests). One pre-registered shot; no rescues.
+
+---
+
+# Results (appended 2026-09-13, after the pre-registered run)
+
+## Verdict: FAILED the survival criterion — family killed.
+
+- **Walk-forward OOS net Sharpe: +0.53 vs EW basket +1.03** over the
+  identical 2008–2026 window (SPY: +0.64). Not close.
+- Default cell in-sample: 7.4% CAGR, Sharpe 0.57, 12.8% average
+  exposure, ~5× turnover.
+- Surface (27 cells): 0.23–0.85, best cells are the *mildest* dips
+  with the *longest* holds — i.e., the family scores best as it
+  degenerates toward "just own the basket," the same convergence
+  pattern that unmasked PEAD. Walk-forward selection scattered across
+  7 cells with no persistence.
+- Conditional-mean diagnostic: post-dip days do average double the
+  unconditional daily return (0.24% vs 0.12%/day) — but t = 1.28,
+  p = 0.20 on 699 active days. Indistinguishable from luck. There is
+  a hint of an effect; there is not evidence of one.
+
+## Read
+
+The dip-buy edge, if it exists, is too weak and too infrequent to
+survive costs and estimation noise at this universe's size. Per the
+pre-registration: killed, no variants, no rescues. The snoop ledger
+gains 28 runs (~168 total).
+
+## How this could be fooling us
+
+- The conditional mean IS elevated — with 3× more history or a wider
+  cross-section of sectors, this exact rule might clear significance.
+  "Killed here" means killed *on this universe with this sample*, not
+  disproven as a market phenomenon.
+- The survival criterion (beat the basket's Sharpe) is strict for a
+  12.8%-exposure sleeve; a blend-level criterion could have passed a
+  weak-positive sleeve. That laxer bar was considered and rejected at
+  pre-registration precisely because it rescues everything.
