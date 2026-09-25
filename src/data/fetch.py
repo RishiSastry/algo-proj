@@ -38,7 +38,11 @@ def _download(ticker: str, start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFra
     if hist.empty:
         return pd.DataFrame(columns=cache.FIELDS)
     hist.index = pd.to_datetime(hist.index).tz_localize(None).normalize()
-    return hist[cache.FIELDS]
+    # vendor outages can return rows with volume but NaN prices; caching
+    # those would poison the store permanently (2026-09-21 incident).
+    # A bar without a close is not a bar.
+    out = hist[cache.FIELDS]
+    return out[out["Close"].notna()]
 
 
 def get_ticker(ticker: str, start=DEFAULT_START, end=None) -> pd.DataFrame:
@@ -63,13 +67,18 @@ def get_ticker(ticker: str, start=DEFAULT_START, end=None) -> pd.DataFrame:
             head = _download(ticker, start, cov_start - pd.Timedelta(days=1))
             df = cache.merge(head if not head.empty else None, df)
             fetched = True
+        new_cov_end = cov_end
         if end > cov_end:
             tail = _download(ticker, cov_end + pd.Timedelta(days=1), end)
-            df = cache.merge(df, tail) if not tail.empty else df
+            if not tail.empty:
+                df = cache.merge(df, tail)
+                new_cov_end = end
+            # empty tail (holiday or vendor outage): do NOT extend
+            # coverage — retry the range on the next call
             fetched = True
         if fetched:
             cache.save(ticker, df)
-            cache.save_meta(ticker, min(start, cov_start), max(end, cov_end))
+            cache.save_meta(ticker, min(start, cov_start), new_cov_end)
 
     return df.loc[(df.index >= start) & (df.index <= end)]
 

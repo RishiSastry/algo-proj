@@ -1,8 +1,10 @@
 {
-  "cash": 1000.0,
-  "positions": {},
+  "cash": 460.1907104492187,
+  "positions": {
+    "SMH": 1.0
+  },
   "pending": {
     "SMH": 1.0
   },
-  "last_processed": "2026-09-11"
+  "last_processed": "2026-09-24"
 }

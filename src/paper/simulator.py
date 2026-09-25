@@ -90,10 +90,18 @@ class Account:
         if self.pending:
             nav_open = self.cash + sum(
                 sh * float(opens[t]) for t, sh in self.positions.items())
+            deferred = {}
             for ticker, target_w in self.pending.items():
-                px = float(opens[ticker])
+                px = float(opens[ticker]) if pd.notna(opens.get(ticker)) else float("nan")
+                # bad/missing price (vendor glitch): defer the fill, retry
+                # next day rather than crashing or filling at garbage
+                if not (px > 0) or pd.isna(nav_open):
+                    deferred[ticker] = target_w
+                    continue
                 have = self.positions.get(ticker, 0.0)
-                want = target_w * nav_open / px
+                # size buys net of the transaction cost so cash never
+                # goes (more than trivially) negative
+                want = target_w * nav_open * (1 - COST_PER_SIDE) / px
                 if self.whole_shares:
                     want = float(int(want))  # floor toward zero
                 delta = want - have
@@ -107,7 +115,7 @@ class Account:
                 rows.append({"date": day, "event": "FILL", "ticker": ticker,
                              "shares": round(delta, 4), "price": round(px, 4),
                              "value": round(delta * px, 2), "cost": round(cost, 4)})
-            self.pending = {}
+            self.pending = deferred
 
         nav = self.nav(closes)
         rows.append({"date": day, "event": "MARK", "ticker": "",

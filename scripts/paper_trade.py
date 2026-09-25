@@ -48,6 +48,11 @@ def main() -> int:
     idx = basket_index(uni_closes, universe)
     signal = (idx > idx.rolling(MA_WINDOW).mean()).astype(float)
 
+    # NAV marks tolerate a vendor NaN via last known close; fills use raw
+    # opens so the simulator defers instead of filling at a stale price
+    open_panel = panel["Open"]
+    close_panel = panel["Close"].ffill()
+
     accounts = [
         ("basket", Account.load(PAPER_DIR / "basket", whole_shares=False),
          basket_weights),
@@ -66,15 +71,15 @@ def main() -> int:
             if weights is not None:
                 row = weights.loc[date]
                 targets = {t: float(w) for t, w in row.items() if w > 0}
-                opens = panel["Open"].loc[date]
-                closes = panel["Close"].loc[date]
+                opens = open_panel.loc[date]
+                closes = close_panel.loc[date]
             else:
                 targets = {"SMH": 1.0} if signal.loc[date] > 0 else {}
-                opens = panel["Open"].loc[date][["SMH"]]
-                closes = panel["Close"].loc[date][["SMH"]]
+                opens = open_panel.loc[date][["SMH"]]
+                closes = close_panel.loc[date][["SMH"]]
             acct.process_day(date, opens, closes, targets)
 
-        nav = acct.nav(panel["Close"].iloc[-1])
+        nav = acct.nav(close_panel.iloc[-1])
         state = "IN (uptrend)" if signal.iloc[-1] > 0 else "OUT (cash)"
         print(f"{name:8s} NAV ${nav:,.2f} | signal {state} | "
               f"positions {len(acct.positions)} | last {acct.last_processed}")

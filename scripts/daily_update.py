@@ -39,6 +39,9 @@ def main() -> int:
     recent = panel.loc[panel.index[-RECENT_DAYS]:]
     report = run_report(recent, universe)
     flags = []
+    if report["missing_days"]:
+        flags.append("missing bars: " + ", ".join(
+            f"{t}×{n}" for t, n in report["missing_days"].items()))
     if not report["bad_prices"].empty:
         flags.append(f"bad prices: {len(report['bad_prices'])}")
     if not report["long_gaps"].empty:
